@@ -1,3 +1,23 @@
+<script setup>
+const linksList = [
+  {
+    title: "Главная",
+    icon: "la la-home",
+    link: "/",
+  },
+  {
+    title: "Профиль",
+    icon: "la la-user",
+    link: "/profile",
+  },
+  {
+    title: "Тикеты",
+    icon: "la la-file-alt",
+    link: "/tickets",
+  },
+];
+</script>
+
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
@@ -11,30 +31,41 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
+        <q-toolbar-title> Тестовое задание </q-toolbar-title>
+      </q-toolbar>
 
-        <div>Quasar v{{ $q.version }}</div>
+      <q-toolbar>
+        <Breadcrumbs />
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+      <q-list class="flex column">
+        <q-item-label header> Меню </q-item-label>
 
-        <EssentialLink
-          v-for="link in essentialLinks"
+        <q-item
+          clickable
+          v-ripple
+          v-for="link in linksList"
+          :to="link.link"
           :key="link.title"
-          v-bind="link"
+        >
+          <q-item-section avatar top>
+            <q-avatar :icon="link.icon" color="primary" text-color="white" />
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label lines="1">{{ link.title }}</q-item-label>
+          </q-item-section>
+        </q-item>
+
+        <q-btn
+          padding
+          class="q-mt-md q-mx-auto"
+          unelevated
+          color="primary"
+          label="Выйти"
+          @click="logout()"
         />
       </q-list>
     </q-drawer>
@@ -46,71 +77,36 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
-import EssentialLink from 'components/EssentialLink.vue'
+import { defineComponent, ref } from "vue";
 
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
+import { useUserStore } from "stores/user";
+import { useTicketStore } from "stores/ticket";
+
+import Breadcrumbs from "components/Breadcrumbs.vue";
 
 export default defineComponent({
-  name: 'MainLayout',
+  name: "MainLayout",
 
-  components: {
-    EssentialLink
+  setup() {
+    const leftDrawerOpen = ref(false);
+    return {
+      leftDrawerOpen,
+      toggleLeftDrawer() {
+        leftDrawerOpen.value = !leftDrawerOpen.value;
+      },
+    };
   },
 
-  setup () {
-    const leftDrawerOpen = ref(false)
+  methods: {
+    logout() {
+      const userStore = useUserStore();
+      const ticketStore = useTicketStore();
 
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
-    }
-  }
-})
+      userStore.clearData();
+      ticketStore.clearData();
+
+      this.$router.replace("/login");
+    },
+  },
+});
 </script>
